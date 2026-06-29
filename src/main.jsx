@@ -1,4 +1,4 @@
-/* containertop — top for your containers' HTTP traffic.
+/* containertraffic — top for your containers' HTTP traffic.
  *
  * A live, zero-config view of every container's HTTP, attributed by cgroup
  * straight from the kernel — no sidecar, no app changes. It frames what it sees
@@ -19,7 +19,7 @@
  * host libssl only (see README).
  */
 import { Box, mount, signal } from "yeet:tui";
-import { containers, feed, routes, reset, setSlowMs, slowMs, stats } from "@/probes/containertop.js";
+import { containers, feed, routes, reset, setSlowMs, slowMs, stats } from "@/probes/containertraffic.js";
 import { closeLogs, logLines, logStatus, openLogs } from "@/probes/logs.js";
 import { layoutFor } from "@/lib/layout.js";
 import TabBar, { TABS } from "@/components/tabbar.jsx";
@@ -116,13 +116,18 @@ onKey((e) => {
   const code = e.code;
   const k = (e.key ?? "").toLowerCase();
   if (code === "Escape" || k === "q") { exit(); return; }
-  if (code === "Tab" || k === "tab") { cycle(e.shiftKey ? -1 : 1); return; }
+  // Arrows switch the active TAB (the whole view); Tab moves the row SELECTION
+  // within the active list. Number keys still jump straight to a tab.
+  if (code === "ArrowUp" || code === "ArrowLeft") { cycle(-1); return; }
+  if (code === "ArrowDown" || code === "ArrowRight") { cycle(1); return; }
+  if (code === "Tab" || k === "tab") { move(e.shiftKey ? -1 : 1); return; }
   if (k >= "1" && k <= "9") { jump(order[Number(k) - 1]); return; }
   if (k === "r") { reset(); return; }
   if (k === "+" || k === "=") { setSlowMs(slowMs + 50); return; }
   if (k === "-" || k === "_") { setSlowMs(Math.max(1, slowMs - 50)); return; }
-  if (code === "ArrowUp" || k === "k") { move(-1); return; }
-  if (code === "ArrowDown" || k === "j") { move(1); return; }
+  // Vim-style row movement kept as an alternative to Tab.
+  if (k === "k") { move(-1); return; }
+  if (k === "j") { move(1); return; }
 });
 
 // Ctrl-C confirm: a left-open monitor shouldn't die on a reflexive ^C.

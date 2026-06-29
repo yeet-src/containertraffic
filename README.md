@@ -1,4 +1,4 @@
-# `containertop`
+# `containertraffic`
 
 > **htop for your containers' HTTP.** Every request each container serves, ranked by what's actually wrong with it.
 
@@ -10,9 +10,9 @@
   <a href="https://discord.gg/dYZu9PjKB"><img src="https://img.shields.io/badge/chat-Discord-5865F2" alt="Discord"></a>
 </p>
 
-![demo gif or screenshot (required, lives in assets/)](assets/containertop.gif)
+![demo gif or screenshot (required, lives in assets/)](assets/containertraffic.gif)
 
-**`containertop` is a live, zero-config dashboard that shows every container's HTTP traffic, attributed to the container by cgroup and read straight from the kernel with eBPF.**
+**`containertraffic` is a live, zero-config dashboard that shows every container's HTTP traffic, attributed to the container by cgroup and read straight from the kernel with eBPF.**
 
 > [!TIP]
 > No sidecar, no proxy, no app changes. It reads HTTP at the socket layer and tags each request with the kernel's cgroup id, so the per-container split comes from the kernel rather than from a service mesh you had to install first.
@@ -21,7 +21,7 @@
 
 ```sh
 curl -fsSL https://yeet.cx | sh
-yeet run github:yeet-src/containertop
+yeet run github:yeet-src/containertraffic
 ```
 <sub>[Manual install guide](https://yeet.cx/docs/install/manual-installation) | Linux only</sub>
 
@@ -29,23 +29,23 @@ Switch views with the number keys (`1` Containers, `2` Routes, `3` Notable, `4` 
 
 ## A 60-second primer on watching container HTTP
 
-A container is just a process in its own cgroup. Its HTTP requests leave through the same kernel socket calls as any other process; the only thing that ties a request to "the checkout container" is which cgroup the calling task belongs to. `containertop` reads both: the HTTP off the socket, and the cgroup off the task.
+A container is just a process in its own cgroup. Its HTTP requests leave through the same kernel socket calls as any other process; the only thing that ties a request to "the checkout container" is which cgroup the calling task belongs to. `containertraffic` reads both: the HTTP off the socket, and the cgroup off the task.
 
 | Term | What it means here |
 |---|---|
 | **cgroup** | The kernel's grouping for a container's processes. On cgroup v2 a Docker container's leaf is named for its 64-char container id, which is how a request gets attributed to a named container. |
-| **kprobe** | A kernel hook on a function. `containertop` hooks `tcp_sendmsg` (the request) and `tcp_recvmsg` (the response) to read HTTP as the kernel moves it. |
-| **uprobe** | A hook on a *userspace* function. `containertop` hooks `SSL_write` / `SSL_read` in the host TLS library to read HTTPS as plaintext, before encryption and after decryption. |
+| **kprobe** | A kernel hook on a function. `containertraffic` hooks `tcp_sendmsg` (the request) and `tcp_recvmsg` (the response) to read HTTP as the kernel moves it. |
+| **uprobe** | A hook on a *userspace* function. `containertraffic` hooks `SSL_write` / `SSL_read` in the host TLS library to read HTTPS as plaintext, before encryption and after decryption. |
 | **RED** | Rate, Errors, Duration. The three signals a request-driven service is judged by, framed here as the three ways a service gets sick: **broken** (errors), **overloaded** (rate), **slow** (tail latency). |
 | **route pattern** | A path with its variable parts collapsed: `/users/1839` and `/users/204` both become `/users/{id}`. How requests get grouped without the cardinality exploding. |
 
-The trick that makes `containertop` cheap: it never sits in the request path. It watches the kernel's socket and TLS calls, so the container serves traffic exactly as it would if the tool were not running.
+The trick that makes `containertraffic` cheap: it never sits in the request path. It watches the kernel's socket and TLS calls, so the container serves traffic exactly as it would if the tool were not running.
 
 ## Common use cases
 
 Backend developers debugging which container is misbehaving under load, and SREs watching a host full of services without standing up a mesh to do it.
 
-Where you'd normally reach for a service mesh's dashboard or a per-container `docker logs` tail plus a metrics scrape, `containertop` reads the HTTP and the attribution straight from the kernel, so you get per-container rate, errors, and latency with nothing injected into the containers.
+Where you'd normally reach for a service mesh's dashboard or a per-container `docker logs` tail plus a metrics scrape, `containertraffic` reads the HTTP and the attribution straight from the kernel, so you get per-container rate, errors, and latency with nothing injected into the containers.
 
 - A deploy went out and error rates moved. Which container is returning the 5xxs?
 - One host runs a dozen services. Which one is slow right now, and on which route?
@@ -66,7 +66,7 @@ The screen is a three-column layout: a vertical tab rail on the left, the active
 
 Three layers: a single BPF object, a BPF-aware data layer in JS, and pure UI that reads signals.
 
-**The BPF side.** One object, `bin/probe.bpf.o`, linked from `src/bpf/containertop.bpf.c`, with six programs feeding one ring buffer. Each event carries the cgroup id and name, the method, path, status, latency, byte counts, and a source tag (wire or TLS).
+**The BPF side.** One object, `bin/probe.bpf.o`, linked from `src/bpf/containertraffic.bpf.c`, with six programs feeding one ring buffer. Each event carries the cgroup id and name, the method, path, status, latency, byte counts, and a source tag (wire or TLS).
 
 | Program | Hook | What it captures |
 |---|---|---|
@@ -80,7 +80,7 @@ Attribution is read in-kernel: each request site records the task's leaf cgroup 
 **The JS side.** One ring-buffer subscription, rolled into the views.
 
 - `src/probes/probe.js` loads the object and attaches the programs once.
-- `src/probes/containertop.js` subscribes to the ring buffer and aggregates every request into RED metrics per container and per route, with latency tracked as percentiles from a recent-sample reservoir.
+- `src/probes/containertraffic.js` subscribes to the ring buffer and aggregates every request into RED metrics per container and per route, with latency tracked as percentiles from a recent-sample reservoir.
 - `src/probes/logs.js` streams a selected container's stdout/stderr (this is the only piece that is not eBPF; it reads the daemon's container-logs API).
 - `src/lib/containers.js` resolves a cgroup name to a container name by matching the embedded id against the running container list.
 - `src/lib/report.js` is `analyze()`, the broken/overloaded/slow heuristics behind the Report tab.
@@ -98,7 +98,7 @@ Container attribution to a *named* container reads the running container list fr
 ## Honest caveats
 
 > [!NOTE]
-> What `containertop` does not do, and what it gets wrong.
+> What `containertraffic` does not do, and what it gets wrong.
 
 - **HTTP/1.x only.** HTTP/2's binary HPACK framing is not decoded; that traffic shows nothing rather than garbage. (Many clients negotiate h2 by default over TLS; forcing HTTP/1.1 makes the traffic visible.)
 - **Containerized TLS is not captured.** The `SSL_write` / `SSL_read` uprobes attach to the *host's* `libssl`. A container that ships its own `libssl` inside its image is a different library the host-side uprobe cannot hook, so encrypted traffic resolves for host processes on the system `libssl`, not for in-container HTTPS. The status strip marks this: `enc(host)` when the probe is attached, `enc(off)` if it could not attach. Plaintext is attributed for containers regardless. (extrapolated, grounding 2 — review: this is a current limit of the uprobe binding, which targets a library by name and has no per-container or per-pid attach.)
@@ -121,7 +121,7 @@ The TLS uprobe attaches to the host `libssl`, and most containers ship their own
 It reads only HTTP metadata and container logs from the kernel and the daemon; it does not modify traffic or inject into containers. (extrapolated, grounding 3 — review: a security/appropriateness claim worth an engineer's confirmation before publishing.)
 
 **How is this different from `docker stats` or a metrics dashboard?**
-`docker stats` shows CPU, memory, and network bytes, not HTTP. A metrics dashboard shows what the service was instrumented to emit. `containertop` shows the actual requests, methods, paths, status codes, and latency, with no instrumentation, read from the kernel.
+`docker stats` shows CPU, memory, and network bytes, not HTTP. A metrics dashboard shows what the service was instrumented to emit. `containertraffic` shows the actual requests, methods, paths, status codes, and latency, with no instrumentation, read from the kernel.
 
 ## Building from source
 
@@ -138,4 +138,4 @@ The BPF program declares `char LICENSE[] SEC("license") = "Dual BSD/GPL"`, the d
 
 ---
 
-Built with [yeet](https://yeet.cx/docs/?utm_source=github&utm_medium=readme&utm_campaign=containertop), a JS runtime for writing eBPF programs on Linux machines. Join us on [discord](https://discord.gg/dYZu9PjKB?utm_source=github&utm_medium=readme&utm_campaign=containertop).
+Built with [yeet](https://yeet.cx/docs/?utm_source=github&utm_medium=readme&utm_campaign=containertraffic), a JS runtime for writing eBPF programs on Linux machines. Join us on [discord](https://discord.gg/dYZu9PjKB?utm_source=github&utm_medium=readme&utm_campaign=containertraffic).

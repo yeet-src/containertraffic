@@ -18,7 +18,7 @@ const findingRow = (f, isSel) => (
   <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
     <Text break="none">
       {[
-        t(isSel ? C.textBold : (CAT_COLOR[f.category] ?? C.label), ` ${isSel ? "▸" : (SEV_ICON[f.sev] ?? "•")} `),
+        t(CAT_COLOR[f.category] ?? C.label, ` ${SEV_ICON[f.sev] ?? "•"} `),
         tagRun(f.category), " ",
         b(C.textBold, f.subject),
       ]}

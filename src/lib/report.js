@@ -1,5 +1,5 @@
 // The opinionated Report — what you're actually looking for, ranked. This is
-// what makes containertop a TOOL, not a readout.
+// what makes containertraffic a TOOL, not a readout.
 //
 // The lens is the RED method, but stated the way an on-call engineer thinks:
 // the three ways a service gets sick.

@@ -1,4 +1,4 @@
-# Running the containertop demo
+# Running the containertraffic demo
 
 A reproducible scene for screenshots / the README GIF: four containers running
 a deliberately mixed HTTP workload so all three RED stories show at once — and,
@@ -18,13 +18,13 @@ What you'll see:
 
 - Linux with eBPF + BTF, root, and **Docker**. On macOS, do all of this inside
   the Lima VM (`limactl shell yeet.debian-13`); the host repo is mounted
-  read-only, so work in a writable copy in the VM home (`~/containertop`).
+  read-only, so work in a writable copy in the VM home (`~/containertraffic`).
 - A built project: `make` (needs `bin/probe.bpf.o` and `src/index.jsx`).
 - `demo/seed-docker.sh` builds a tiny image from `demo/app.py` on first run.
 
 ## Steps
 
-Two shells in the VM, both in the project dir (`~/containertop`).
+Two shells in the VM, both in the project dir (`~/containertraffic`).
 
 **Shell A — start the containers:**
 

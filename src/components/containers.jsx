@@ -36,7 +36,7 @@ const row = (r, isSel, maxRate) => {
     <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
       <Text break="none">
         {[
-          t(isSel ? C.textBold : C.dim, pad(isSel ? "▸" : " ", COL.mark)),
+          t(C.dim, pad("", COL.mark)),
           b(c, pad(r.name, COL.name)), " ",
           t(C.textBold, lpad(fmtRate(r.rate), COL.rate)), " ",
           ...bar(ratePct, COL.bar), " ",

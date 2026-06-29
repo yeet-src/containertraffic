@@ -54,7 +54,7 @@ const row = (r, isSel) => {
     <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
       <Text break="none">
         {[
-          t(isSel ? C.textBold : reasonColor(r.reason), pad(isSel ? "▸" : " ", COL.mark)),
+          t(reasonColor(r.reason), pad("", COL.mark)),
           t(C.dim, pad(clock(r.t), COL.time)), " ",
           b(nameC, pad(r.name, COL.name)), " ",
           t(C.name, pad(r.method, COL.verb)), " ",

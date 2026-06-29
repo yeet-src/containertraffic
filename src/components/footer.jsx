@@ -1,6 +1,6 @@
 // Key-hint rail — uses the shared theme (not hardcoded kit colors) so it
-// matches containertop's slate identity. Each shortcut is a keycap on a slate
-// tile then a dim label.
+// matches containertraffic's slate identity. Each shortcut is a keycap on a
+// slate tile then a dim label.
 import { Box, Text, face } from "yeet:tui";
 import { t } from "@/lib/format.js";
 import { C } from "@/lib/theme.js";
@@ -16,8 +16,9 @@ export default () => (
     <Text break="none">
       {[
         " ",
-        ...hint("1-4", "tab"),
-        ...hint("↑↓", "select"),
+        ...hint("↑↓", "tab"),
+        ...hint("⇥", "select"),
+        ...hint("1-4", "jump"),
         ...hint("+/-", "slow floor"),
         ...hint("r", "reset"),
         ...hint("q", "quit"),

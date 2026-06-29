@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# A tiny HTTP backend with deliberately mixed behavior, so containertop has
+# A tiny HTTP backend with deliberately mixed behavior, so containertraffic has
 # something interesting to show: healthy routes, a route that 404s, a route
 # that 500s, and a slow route. Each fake "container" runs one of these.
 #

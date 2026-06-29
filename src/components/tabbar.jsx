@@ -1,6 +1,6 @@
 // Vertical tab rail — the left column, full body height. Brand chip at the top,
 // then the tabs stacked; the active tab is a bright slate-teal tile with its
-// number in cyan, inactive tabs recede. containertop's own chrome (the series'
+// number in cyan, inactive tabs recede. containertraffic's own chrome (the series'
 // other scripts use a horizontal top bar — this reads as a different tool).
 import { Box, Text, idx } from "yeet:tui";
 import { b, t } from "@/lib/format.js";

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Spin up a few fake "containers" so containertop has named rows with mixed
+# Spin up a few fake "containers" so containertraffic has named rows with mixed
 # RED behavior to show. Each service runs in its own systemd cgroup scope
-# (<name>.scope), which containertop attributes to a named row exactly like a
+# (<name>.scope), which containertraffic attributes to a named row exactly like a
 # real container's cgroup. Each scope runs an HTTP backend plus a client loop
 # generating realistic traffic; one client uses HTTPS so the encrypted path
 # lights up.
@@ -29,7 +29,7 @@ start_service() {
   local name="$1" port="$2" profile="$3"
   # Backend AND its client loop run in ONE scope named "<name>.scope", so all
   # of this service's HTTP (the outbound curls) attributes to "<name>" — just
-  # like a real container that both serves and makes requests. containertop
+  # like a real container that both serves and makes requests. containertraffic
   # keys on the cgroup of whoever issues the request (the curl), so the client
   # must live in this scope for the row to read "<name>".
   systemd-run --scope --quiet --unit="${name}" bash -c "
@@ -68,6 +68,6 @@ systemd-run --scope --quiet --unit=payments-gw bash -c '
 ' &
 PIDS+=($!); SCOPES+=("payments-gw.scope")
 
-echo "traffic flowing. run containertop in another shell:  sudo yeet run -t ."
+echo "traffic flowing. run containertraffic in another shell:  sudo yeet run -t ."
 echo "Ctrl-C here to stop and clean up."
 wait
