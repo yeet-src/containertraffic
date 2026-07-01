@@ -40,7 +40,12 @@ char LICENSE[] SEC("license") = "Dual BSD/GPL";
 #define TASK_COMM_LEN 16
 #define METHOD_LEN    8   // longest method we keep (OPTIONS, CONNECT, DELETE)
 #define PATH_LEN      64  // request path, truncated
-#define PEEK_LEN      96  // bytes of the buffer we copy to parse a line
+#define PEEK_LEN      64  // bytes of the buffer we copy to parse a line. Drives
+                          // the parser's verifier complexity quadratically; 64
+                          // keeps on_sendmsg well under kernel 6.1's limit (96
+                          // was rejected there). Long request paths truncate a
+                          // little sooner, which the route-pattern collapse in
+                          // JS absorbs.
 #define CG_NAME_LEN   96  // leaf cgroup name; fits "docker-<64hex>.scope" (78)
 
 // Slow-request floor in milliseconds, patched live from the UI. Default 0:
@@ -127,6 +132,13 @@ static __always_inline void read_cgroup_name(char *dst, int sz)
 // States: 0 = reading METHOD, 1 = reading PATH, 2 = at the space before
 // " HTTP/", 3 = verifying the "HTTP/" tag. `mi`/`pi` are output cursors,
 // bounded by their array sizes so writes stay in range.
+//
+// Complexity note: this loop's cost grows quadratically with PEEK_LEN, and
+// kernel 6.1's verifier is stricter than 6.6+ about the resulting state count.
+// Two things keep it under 6.1's limit: PEEK_LEN is 64 (not 96), and the
+// METHOD phase bails after METHOD_LEN bytes — without that early exit the
+// method-scanning branch fans out across the whole window and on_sendmsg
+// balloons to ~575k insns / ~17k states (rejected on 6.1); with it, ~66k / ~2k.
 static __always_inline int parse_request_line(const char *buf, int len, struct inflight *fl)
 {
 	if (len < 5) return 0;
@@ -144,6 +156,7 @@ static __always_inline int parse_request_line(const char *buf, int len, struct i
 		if (state == 0) {            // METHOD
 			if (c == ' ') { if (mi == 0) return 0; state = 1; continue; }
 			if (c < 'A' || c > 'Z') return 0; // methods are letters only
+			if (j >= METHOD_LEN) return 0;    // no method is this long -> not HTTP
 			// Mask with size-1 (METHOD_LEN is a power of two) so the write
 			// offset is provably in range; cap the cursor one below the last
 			// slot to keep a trailing NUL.
