@@ -2,10 +2,10 @@
 // to {id}), ranked by volume, as the MIDDLE column. The detail pane shows which
 // containers serve the highlighted route plus its full percentiles.
 import { Box, Text } from "yeet:tui";
-import { b, bar, errColor, fmtCount, fmtLat, fmtRate, lpad, pad, t } from "@/lib/format.js";
+import { b, bar, errColor, fmtCount, fmtLat, fmtRate, latColor, lpad, pad, t } from "@/lib/format.js";
+import { slowMs } from "@/probes/containertraffic.js";
 import { C } from "@/lib/theme.js";
 
-const SLOW = C.slow;
 const BAR_W = 10;
 const COL = { mark: 2, route: 22, rate: 7, bar: BAR_W, err: 6, p99: 7 };
 
@@ -23,25 +23,26 @@ const headerRow = () => (
   </Box>
 );
 
-const row = (r, isSel, maxRate) => {
+const row = (r, isSel, maxRate, hlBg) => {
   const ratePct = maxRate > 0 ? (r.rate / maxRate) * 100 : 0;
   return (
-    <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
+    <Box height="1" direction="row" bg={isSel ? hlBg : undefined}>
       <Text break="none">
         {[
           t(C.dim, pad("", COL.mark)),
-          b(C.name, pad(r.route, COL.route)), " ",
-          t(C.textBold, lpad(fmtRate(r.rate), COL.rate)), " ",
+          // Regular weight on the route name; bold rides the ranked metric only.
+          t(C.name, pad(r.route, COL.route)), " ",
+          b(C.textBold, lpad(fmtRate(r.rate), COL.rate)), " ",
           ...bar(ratePct, COL.bar), " ",
           t(errColor(r.errRate), lpad(r.errRate > 0 ? `${r.errRate.toFixed(0)}%` : "·", COL.err)), " ",
-          t(r.p99 >= 1000 ? SLOW : C.dim, lpad(fmtLat(r.p99), COL.p99)),
+          t(latColor(r.p99, slowMs), lpad(fmtLat(r.p99), COL.p99)),
         ]}
       </Text>
     </Box>
   );
 };
 
-export default ({ rows: rowsSig, selected, maxRows }) => (
+export default ({ rows: rowsSig, selected, focused, maxRows }) => (
   <Box direction="column" height="1fr" overflow="hidden">
     {headerRow()}
     <Box height="1fr" direction="column" overflow="hidden">
@@ -49,9 +50,10 @@ export default ({ rows: rowsSig, selected, maxRows }) => (
         const rows = rowsSig.get();
         if (!rows.length) return [<Box height="1"><Text>{t(C.dim, "  waiting for HTTP traffic…")}</Text></Box>];
         const sel = selected.get();
+        const hlBg = focused ? C.focusBg : C.selBg;
         const maxRate = rows.reduce((m, r) => Math.max(m, r.rate), 0);
         const out = [];
-        for (let i = 0; i < rows.length && i < maxRows; i++) out.push(row(rows[i], i === sel, maxRate));
+        for (let i = 0; i < rows.length && i < maxRows; i++) out.push(row(rows[i], i === sel, maxRate, hlBg));
         return out;
       }}
     </Box>
@@ -77,7 +79,7 @@ export const routeDetail = (r) => {
   out.push(kvRow("latency", [
     t(C.text, `p50 ${fmtLat(r.p50)}`), t(C.dim, "  "),
     t(C.text, `p95 ${fmtLat(r.p95)}`), t(C.dim, "  "),
-    t(r.p99 >= 1000 ? C.slow : C.text, `p99 ${fmtLat(r.p99)}`),
+    t(r.p99 >= slowMs ? C.slow : C.text, `p99 ${fmtLat(r.p99)}`),
   ]));
 
   out.push(<Box height="1"><Text> </Text></Box>);

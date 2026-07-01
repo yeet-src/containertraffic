@@ -2,7 +2,7 @@
 # Real-Docker demo: a handful of named containers, each running demo/app.py with
 # a different PROFILE so they tell distinct RED stories. Because they're real
 # Docker containers, containertraffic resolves them by container id (the 64-hex in
-# their cgroup) to their real names, AND the `L` logs drill-down works (it
+# their cgroup) to their real names, AND the detail pane's live log tail works (it
 # streams docker_logs).
 #
 # Usage:  sudo demo/seed-docker.sh        # run until Ctrl-C, then clean up
@@ -44,7 +44,7 @@ run payments-gw  payments
 
 echo
 echo "containers up. run the dashboard in another shell:  sudo yeet run -t ."
-echo "On the Containers tab, select a row and press L for its logs."
+echo "On the Containers view, select a row; the detail pane tails its logs."
 echo "Ctrl-C here to stop and remove them."
 # idle until interrupted
 while true; do sleep 3600; done

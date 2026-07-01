@@ -47,16 +47,18 @@ const colHeader = () => (
   </Box>
 );
 
-const row = (r, isSel) => {
+const row = (r, isSel, hlBg) => {
   const nameC = r.tls ? C.tls : C.wire;
   const code = r.status ? `${r.status}` : "—";
   return (
-    <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
+    <Box height="1" direction="row" bg={isSel ? hlBg : undefined}>
       <Text break="none">
         {[
           t(reasonColor(r.reason), pad("", COL.mark)),
           t(C.dim, pad(clock(r.t), COL.time)), " ",
-          b(nameC, pad(r.name, COL.name)), " ",
+          // Name at regular weight (source hue); bold rides the status code —
+          // the triage signal in this view — matching the lists' hierarchy.
+          t(nameC, pad(r.name, COL.name)), " ",
           t(C.name, pad(r.method, COL.verb)), " ",
           b(r.reason === "error" ? ERRC : C.ok, lpad(code, COL.code)), " ",
           t(r.reason === "slow" ? SLOW : C.dim, lpad(fmtLat(r.lat), COL.lat)),
@@ -66,7 +68,37 @@ const row = (r, isSel) => {
   );
 };
 
-export default ({ feed: feedSig, selected, maxRows }) => (
+// Viewport model. The feed scrolls like a normal list: the selection moves
+// freely inside the visible window, and the window only scrolls when the
+// selection would fall off the top or bottom edge. The window is tracked by the
+// SEQ at its top row (`topSeq`), not a raw index, so when new rows prepend the
+// window stays anchored on the same content instead of jumping.
+//
+// Given the rows, the selected seq, the current top seq, and the window height,
+// returns { start, topSeq } — the index to start rendering at and the resolved
+// top seq (clamped so the selection is always visible). Both the renderer and
+// the mouse hit-test call this so they can never disagree.
+export const feedWindow = (rows, selSeq, topSeq, maxRows) => {
+  const n = rows.length;
+  if (n === 0) return { start: 0, topSeq: null };
+  const h = Math.max(1, maxRows);
+
+  // Where the window currently starts (by seq), defaulting to the top.
+  let start = topSeq == null ? 0 : rows.findIndex((r) => r.seq === topSeq);
+  if (start < 0) start = 0;
+
+  // Selected row index (if any). Scroll the window to keep it on screen.
+  const si = selSeq == null ? -1 : rows.findIndex((r) => r.seq === selSeq);
+  if (si >= 0) {
+    if (si < start) start = si;                 // selection above window -> scroll up
+    else if (si > start + h - 1) start = si - h + 1; // below window -> scroll down
+  }
+  // Clamp so we never scroll past the end (keeps the window full when possible).
+  start = Math.max(0, Math.min(start, Math.max(0, n - h)));
+  return { start, topSeq: rows[start].seq };
+};
+
+export default ({ feed: feedSig, selected, top, focused, maxRows }) => (
   <Box direction="column" height="1fr" overflow="hidden">
     {() => { const f = feedSig.get(); return headerBar(f.slowMs, f.elided); }}
     {colHeader()}
@@ -76,14 +108,14 @@ export default ({ feed: feedSig, selected, maxRows }) => (
         const rows = f.rows;
         if (!rows.length) return [<Box height="1"><Text>{t(C.ok, "  ✓ nothing notable — no errors, nothing slow")}</Text></Box>];
         const selSeq = selected.get();
-        let anchor = 0;
-        if (selSeq != null) {
-          const fi = rows.findIndex((r) => r.seq === selSeq);
-          if (fi >= 0) anchor = Math.max(0, fi - 2);
-        }
+        const hlBg = focused ? C.focusBg : C.selBg;
+        const win = feedWindow(rows, selSeq, top.get(), maxRows);
+        // Persist the resolved top so hit-testing maps clicks to the same window.
+        // Defer the write (never .set() during render).
+        if (win.topSeq !== top.get()) Promise.resolve().then(() => top.set(win.topSeq));
         const out = [];
         let used = 0;
-        for (let i = anchor; i < rows.length && used < maxRows; i++) { out.push(row(rows[i], rows[i].seq === selSeq)); used++; }
+        for (let i = win.start; i < rows.length && used < maxRows; i++) { out.push(row(rows[i], rows[i].seq === selSeq, hlBg)); used++; }
         return out;
       }}
     </Box>

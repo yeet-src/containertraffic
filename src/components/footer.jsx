@@ -16,9 +16,9 @@ export default () => (
     <Text break="none">
       {[
         " ",
-        ...hint("↑↓", "tab"),
-        ...hint("⇥", "select"),
-        ...hint("1-4", "jump"),
+        ...hint("↑↓", "navigate"),
+        ...hint("→", "into list"),
+        ...hint("←", "back"),
         ...hint("+/-", "slow floor"),
         ...hint("r", "reset"),
         ...hint("q", "quit"),

@@ -89,14 +89,24 @@ export const wrap = (text, width) => {
 // Ramp a 0..100 share onto cool→warm so a dominant entry reads hot.
 export const shareColor = (pct) => heatColor(pct);
 
-// Color an error rate (0..100): green when clean, amber as it climbs, red when
-// a meaningful share of requests are failing.
-export const errColor = (pct) => (pct <= 0 ? C.ok : pct < 5 ? C.label : pct < 20 ? C.warn : C.warn);
+// Color an error rate (0..100) as a three-band gauge, so red stays reserved for
+// a real problem (the taste rule) instead of firing at the first failed
+// request: clean is quiet (dim, not a loud green), a low error share is amber
+// (worth a glance), and only a meaningful share turns red (broken).
+//   0%      → dim      (no signal — don't shout "healthy" in green)
+//   <1%     → ok       (a stray failure; green reassurance)
+//   1–5%    → overloaded(amber, climbing)
+//   ≥5%     → broken   (red — this is the problem)
+export const errColor = (pct) =>
+  pct <= 0 ? C.dim : pct < 1 ? C.ok : pct < 5 ? C.overloaded : C.broken;
 
-// Color an HTTP status code by class: 2xx green, 3xx blue, 4xx amber, 5xx red.
+// Color an HTTP status code by class: 2xx green, 3xx plaintext-teal, 4xx amber
+// (a client warning, not a page), 5xx red. 4xx uses the `overloaded` amber —
+// NOT C.tls — so violet stays a single meaning (encrypted traffic) across the
+// whole UI instead of doubling as "client error".
 export const statusColor = (s) => {
-  if (s >= 500) return C.warn;
-  if (s >= 400) return C.tls; // amber-ish accent; distinct from 5xx red
+  if (s >= 500) return C.broken;
+  if (s >= 400) return C.overloaded;
   if (s >= 300) return C.wire;
   if (s >= 200) return C.ok;
   return C.dim;
@@ -105,3 +115,10 @@ export const statusColor = (s) => {
 // Source → row color. Encrypted (TLS) wins: any encrypted traffic colors the
 // row pink (the encrypted story is the point); pure-plaintext rows are blue.
 export const srcColor = (encShare) => (encShare > 0 ? C.tls : C.wire);
+
+// Color a latency (ms) against the SAME slow floor the Notable tab tunes with
+// +/-, so the whole UI agrees on what "slow" means. Below the floor a latency
+// is ordinary chrome (dim); at or past it, it's the violet SLOW signal. The
+// list renderers pass the live slowMs here instead of a hardcoded 1000ms —
+// which had them disagreeing with the feed's own threshold (default 200ms).
+export const latColor = (ms, slowMs) => (ms >= slowMs ? C.slow : C.dim);

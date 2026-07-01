@@ -21,7 +21,8 @@ export const C = {
   rail: idx(237),        // header/footer rail bg (slate)
   railAccent: idx(24),   // brand chip / active-tab base (deep slate-teal)
   headerBg: idx(238),    // column-header row bg
-  selBg: idx(240),       // selected row bg (slate highlight)
+  selBg: idx(240),       // selected row, RESTING (region not focused) — dark slate
+  focusBg: idx(25),      // selected row / rail item, FOCUSED — blue highlight
   // Chrome / text
   dim: idx(243),         // separators, faint chrome (slate-gray)
   label: idx(248),       // column labels, hints

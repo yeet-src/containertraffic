@@ -42,3 +42,11 @@ export const layoutFor = ({ cols, rows }) => {
     report: { width: clamp(20, list - 2, 120) }, // findings wrap to the list col
   };
 };
+
+// Screen-row geometry for mouse hit-testing. The titlebar occupies screen row
+// 0, so the body starts at row 1. These offsets MUST track the components:
+//   - rail (tabbar.jsx): brand chip (body row 0), spacer (1), tabs (2..5)
+//   - list header: 1 row for most views, 2 rows for Notable (bar + col header)
+// `firstListRow(view)` is the screen row of the first data row in the middle.
+export const RAIL_FIRST_TAB_ROW = 1 + 2; // screen row of the first rail tab
+export const firstListRow = (view) => (view === "live" ? 1 + 2 : 1 + 1);

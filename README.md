@@ -10,7 +10,7 @@
   <a href="https://discord.gg/dYZu9PjKB"><img src="https://img.shields.io/badge/chat-Discord-5865F2" alt="Discord"></a>
 </p>
 
-![demo gif or screenshot (required, lives in assets/)](assets/containertraffic.gif)
+![containertraffic dashboard: four containers ranked by HTTP request rate, with per-container RED metrics and a live detail pane](assets/containertraffic.gif)
 
 **`containertraffic` is a live, zero-config dashboard that shows every container's HTTP traffic, attributed to the container by cgroup and read straight from the kernel with eBPF.**
 
@@ -25,7 +25,7 @@ yeet run github:yeet-src/containertraffic
 ```
 <sub>[Manual install guide](https://yeet.cx/docs/install/manual-installation) | Linux only</sub>
 
-Switch views with the number keys (`1` Containers, `2` Routes, `3` Notable, `4` Report) or `Tab`. `↑` / `↓` moves the cursor and the detail pane on the right follows it; on the Containers tab that pane also tails the selected container's logs. `+` / `-` tunes the slow-request threshold on the Notable tab. `q` quits.
+Navigation is two regions, driven by the arrow keys (or `hjkl`). On the left nav rail, `↑` / `↓` switch views (Containers, Routes, Notable, Report) and `→` steps into the list; in the list, `↑` / `↓` move the cursor and `←` returns to the rail. The detail pane on the right follows the cursor; on the Containers view it also tails the selected container's logs automatically. `+` / `-` tunes the slow-request threshold. `q` quits.
 
 ## A 60-second primer on watching container HTTP
 

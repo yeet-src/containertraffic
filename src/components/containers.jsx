@@ -8,10 +8,10 @@
 // — the runtime-computed face form (the named fg()/bold() combinators were
 // removed from yeet:tui, and nested <Text> isn't rendered by the daemon).
 import { Box, Text } from "yeet:tui";
-import { b, bar, errColor, fmtBytes, fmtCount, fmtLat, fmtRate, lpad, pad, statusColor, t } from "@/lib/format.js";
+import { b, bar, errColor, fmtBytes, fmtCount, fmtLat, fmtRate, latColor, lpad, pad, statusColor, t } from "@/lib/format.js";
+import { slowMs } from "@/probes/containertraffic.js";
 import { C } from "@/lib/theme.js";
 
-const SLOW = C.slow;
 const BAR_W = 10;
 const COL = { mark: 2, name: 16, rate: 7, bar: BAR_W, err: 6, p99: 7 };
 
@@ -29,26 +29,30 @@ const headerRow = () => (
   </Box>
 );
 
-const row = (r, isSel, maxRate) => {
+const row = (r, isSel, maxRate, hlBg) => {
   const c = r.encShare > 0 ? C.tls : C.wire; // pink if seen encrypted, else blue
   const ratePct = maxRate > 0 ? (r.rate / maxRate) * 100 : 0;
   return (
-    <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
+    <Box height="1" direction="row" bg={isSel ? hlBg : undefined}>
       <Text break="none">
         {[
           t(C.dim, pad("", COL.mark)),
-          b(c, pad(r.name, COL.name)), " ",
-          t(C.textBold, lpad(fmtRate(r.rate), COL.rate)), " ",
+          // Name carries the source hue but regular weight — bold is reserved
+          // for the ranked metric (req/s), the one live value the eye tracks.
+          t(c, pad(r.name, COL.name)), " ",
+          b(C.textBold, lpad(fmtRate(r.rate), COL.rate)), " ",
           ...bar(ratePct, COL.bar), " ",
           t(errColor(r.errRate), lpad(r.errRate > 0 ? `${r.errRate.toFixed(0)}%` : "·", COL.err)), " ",
-          t(r.p99 >= 1000 ? SLOW : C.dim, lpad(fmtLat(r.p99), COL.p99)),
+          t(latColor(r.p99, slowMs), lpad(fmtLat(r.p99), COL.p99)),
         ]}
       </Text>
     </Box>
   );
 };
 
-export default ({ rows: rowsSig, selected, maxRows }) => (
+// `focused` → the selected row is BLUE (this region has focus); otherwise the
+// dark resting highlight.
+export default ({ rows: rowsSig, selected, focused, maxRows }) => (
   <Box direction="column" height="1fr" overflow="hidden">
     {headerRow()}
     <Box height="1fr" direction="column" overflow="hidden">
@@ -56,9 +60,10 @@ export default ({ rows: rowsSig, selected, maxRows }) => (
         const rows = rowsSig.get();
         if (!rows.length) return [<Box height="1"><Text>{t(C.dim, "  waiting for HTTP traffic…")}</Text></Box>];
         const sel = selected.get();
+        const hlBg = focused ? C.focusBg : C.selBg;
         const maxRate = rows.reduce((m, r) => Math.max(m, r.rate), 0);
         const out = [];
-        for (let i = 0; i < rows.length && i < maxRows; i++) out.push(row(rows[i], i === sel, maxRate));
+        for (let i = 0; i < rows.length && i < maxRows; i++) out.push(row(rows[i], i === sel, maxRate, hlBg));
         return out;
       }}
     </Box>
@@ -84,7 +89,7 @@ export const containerDetail = (r) => {
   out.push(kvRow("latency", [
     t(C.text, `p50 ${fmtLat(r.p50)}`), t(C.dim, "  "),
     t(C.text, `p95 ${fmtLat(r.p95)}`), t(C.dim, "  "),
-    t(r.p99 >= 1000 ? C.slow : C.text, `p99 ${fmtLat(r.p99)}`),
+    t(r.p99 >= slowMs ? C.slow : C.text, `p99 ${fmtLat(r.p99)}`),
   ]));
   out.push(kvRow("traffic", [
     t(C.text, fmtBytes(r.bytes)), t(C.dim, "   "),

@@ -14,8 +14,8 @@ export const reportFindings = (containers, routes) => analyze(containers, routes
 
 const tagRun = (category) => b(CAT_COLOR[category] ?? C.label, `[${CATEGORY[category] ?? "—"}]`.padEnd(12));
 
-const findingRow = (f, isSel) => (
-  <Box height="1" direction="row" bg={isSel ? C.selBg : undefined}>
+const findingRow = (f, isSel, hlBg) => (
+  <Box height="1" direction="row" bg={isSel ? hlBg : undefined}>
     <Text break="none">
       {[
         t(CAT_COLOR[f.category] ?? C.label, ` ${SEV_ICON[f.sev] ?? "•"} `),
@@ -26,7 +26,7 @@ const findingRow = (f, isSel) => (
   </Box>
 );
 
-export default ({ findings: findingsSig, selected, maxRows }) => (
+export default ({ findings: findingsSig, selected, focused, maxRows }) => (
   <Box direction="column" height="1fr" overflow="hidden">
     <Box height="1" direction="row" bg={C.headerBg}>
       <Text break="none">
@@ -43,8 +43,9 @@ export default ({ findings: findingsSig, selected, maxRows }) => (
         const findings = findingsSig.get();
         if (!findings.length) return [<Box height="1"><Text>{t(C.dim, "  analyzing…")}</Text></Box>];
         const sel = selected.get();
+        const hlBg = focused ? C.focusBg : C.selBg;
         const out = [];
-        for (let i = 0; i < findings.length && i < maxRows; i++) out.push(findingRow(findings[i], i === sel));
+        for (let i = 0; i < findings.length && i < maxRows; i++) out.push(findingRow(findings[i], i === sel, hlBg));
         return out;
       }}
     </Box>

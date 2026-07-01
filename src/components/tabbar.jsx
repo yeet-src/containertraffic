@@ -1,16 +1,12 @@
-// Vertical tab rail — the left column, full body height. Brand chip at the top,
-// then the tabs stacked; the active tab is a bright slate-teal tile with its
-// number in cyan, inactive tabs recede. containertraffic's own chrome (the series'
-// other scripts use a horizontal top bar — this reads as a different tool).
-import { Box, Text, idx } from "yeet:tui";
+// Vertical nav rail — the left column, full body height. Brand chip at the top,
+// then the views stacked. The active view is highlighted: BLUE when the rail is
+// the focused region, dark slate-teal when focus has moved into the list. Arrow
+// keys (and clicks) drive it; there are no number shortcuts.
+import { Box, Text } from "yeet:tui";
 import { b, t } from "@/lib/format.js";
 import { C } from "@/lib/theme.js";
 
-const ACTIVE_BG = C.railAccent;
-const ACTIVE_FG = C.textBold;
-const NUMC = idx(81); // bright cyan for the active number
-
-// Tabs in cycle order — must match the keys in main.jsx's VIEWS / cycle.
+// Views in order — the keys main.jsx navigates and routes to.
 export const TABS = [
   { id: "containers", label: "Containers" },
   { id: "routes", label: "Routes" },
@@ -18,36 +14,36 @@ export const TABS = [
   { id: "report", label: "Report" },
 ];
 
-// One stacked tab row (fixed width = the rail width passed in).
-const tabRow = (tab, n, isActive, w) => {
+// One stacked nav row (fixed width = the rail width passed in).
+const navRow = (tab, isActive, railFocused, w) => {
   const label = tab.label.toUpperCase();
-  // The number prefix " N " takes 3 cols; the label fills the rest of the rail.
-  const lw = Math.max(1, w - 3);
-  const labelPad = (label + " ".repeat(lw)).slice(0, lw);
+  const pad = (s) => (" " + s + " ".repeat(w)).slice(0, w);
   if (isActive) {
+    // Blue when the rail is focused, dark accent when the list has focus.
+    const bg = railFocused ? C.focusBg : C.railAccent;
     return (
-      <Box height="1" direction="row" bg={ACTIVE_BG}>
-        <Text break="none">{[b(NUMC, ` ${n} `), b(ACTIVE_FG, labelPad)]}</Text>
+      <Box height="1" direction="row" bg={bg}>
+        <Text break="none">{b(C.textBold, pad(label))}</Text>
       </Box>
     );
   }
   return (
     <Box height="1" direction="row">
-      <Text break="none">{[t(C.dim, ` ${n} `), t(C.label, labelPad)]}</Text>
+      <Text break="none">{t(C.label, pad(label))}</Text>
     </Box>
   );
 };
 
-export default ({ view, width }) => (
+export default ({ view, width, railFocused }) => (
   <Box direction="column" width={`${width}`} height="1fr" bg={C.rail} overflow="hidden">
     {/* brand chip */}
     <Box height="1" direction="row" bg={C.railAccent}>
-      <Text break="none">{b(C.textBold, " ▌ctop")}</Text>
+      <Text break="none">{b(C.textBold, " ▌ctraffic")}</Text>
     </Box>
     <Box height="1"><Text> </Text></Box>
     {() => {
       const cur = view.get();
-      return TABS.map((tab, i) => tabRow(tab, i + 1, tab.id === cur, width));
+      return TABS.map((tab) => navRow(tab, tab.id === cur, railFocused, width));
     }}
   </Box>
 );

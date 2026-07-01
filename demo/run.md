@@ -3,7 +3,7 @@
 A reproducible scene for screenshots / the README GIF: four containers running
 a deliberately mixed HTTP workload so all three RED stories show at once — and,
 because they're real Docker containers, attribution resolves them by **name**
-and the `L` logs drill-down works.
+and the detail pane's live log tail works.
 
 What you'll see:
 
@@ -48,21 +48,26 @@ rates need a few hundred requests to read true).
 
 ## Controls
 
-- `1` Containers · `2` Routes · `3` Notable · `4` Report — or `Tab` to cycle
-- `↑`/`↓` select a row, `Enter` expands it (drill-down)
-- `L` (Containers tab) tail the selected container's logs; `Esc`/`L` closes
-- `+`/`-` (Notable tab) raise/lower the slow-request floor
-- `r` reset counters, `q` quit
+Two focus regions, driven entirely by the arrow keys (or `hjkl`):
+
+- **Rail** (left nav): `↑`/`↓` switch view — Containers · Routes · Notable ·
+  Report — and `→` steps into the list.
+- **List** (middle): `↑`/`↓` move the row selection; `←` returns to the rail.
+- The detail pane on the right mirrors the selected row live; on the
+  **Containers** view it tails that container's logs automatically as the
+  cursor moves — no keypress, no drill-down to open.
+- `+`/`-` raise/lower the slow-request floor; `r` reset counters; `q` quit.
+- Mouse: click a rail item to switch view, click a list row to select it.
 
 ## Recording tips
 
 - Make the terminal **≥110 columns** wide before launching, so names and the
   p95/p99 columns don't truncate.
 - The workload loops continuously, so bars and percentiles stay live.
-- A nice arc: open on **Containers** (the top), `L` on `auth-svc` to show its
-  error logs, `Esc`, `Enter` on `checkout-api` for its slow routes, `3` for
-  **Notable** then `Enter` a failing request, then `4` for the **Report**
-  verdict.
+- A nice arc: open on **Containers** (the top), `→` into the list, scroll to
+  `auth-svc` so the detail pane tails its error logs, back to `checkout-api` to
+  show its slow routes, then `←` `↓` to **Notable** and into a failing request,
+  then **Report** for the verdict.
 
 ## Cleanup
 
@@ -78,5 +83,5 @@ done
 
 `demo/seed.sh` runs the same workload via `systemd-run` cgroup scopes instead
 of Docker. It needs no Docker daemon and still exercises HTTP capture + RED
-metrics + cgroup attribution (rows show the scope name), but the `L` logs
-drill-down won't work (no `docker_logs` for a bare scope).
+metrics + cgroup attribution (rows show the scope name), but the detail pane's
+log tail stays empty (no `docker_logs` for a bare scope).
