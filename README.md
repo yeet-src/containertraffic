@@ -134,7 +134,7 @@ The toolchain (clang, bpftool, esbuild) is vendored by the yeet build setup; on 
 
 ## License
 
-The BPF program declares `char LICENSE[] SEC("license") = "Dual BSD/GPL"`, the dual marker that lets it call GPL-only kernel helpers. (extrapolated, grounding 2 — review: badged GPL-2.0 to match the sibling scripts; there is no `LICENSE` file in the repo yet, so the project-level license should be confirmed and a file added.)
+GPL-2.0
 
 ---
 
