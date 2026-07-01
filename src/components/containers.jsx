@@ -9,7 +9,7 @@
 // removed from yeet:tui, and nested <Text> isn't rendered by the daemon).
 import { Box, Text } from "yeet:tui";
 import { b, bar, errColor, fmtBytes, fmtCount, fmtLat, fmtRate, latColor, lpad, pad, statusColor, t } from "@/lib/format.js";
-import { slowMs } from "@/probes/containertraffic.js";
+import { slowMs } from "@/probes/container-traffic.js";
 import { C } from "@/lib/theme.js";
 
 const BAR_W = 10;

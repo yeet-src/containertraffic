@@ -1,4 +1,4 @@
-// containertraffic's palette — its OWN visual identity, distinct from the other
+// container-traffic's palette — its OWN visual identity, distinct from the other
 // scripts in the series (no shared kit pinks/blues). Built around the tool's
 // mental model, the three ways a service gets sick:
 //

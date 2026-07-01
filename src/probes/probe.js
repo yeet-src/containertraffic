@@ -1,5 +1,5 @@
-// Shared BPF object. The single src/bpf/containertraffic.bpf.c unit is linked
-// into bin/probe.bpf.o and loaded once here; the containertraffic data layer
+// Shared BPF object. The single src/bpf/container-traffic.bpf.c unit is linked
+// into bin/probe.bpf.o and loaded once here; the container-traffic data layer
 // imports this `control` and reads its ring buffer. All binds/attaches
 // happen before the single start().
 //

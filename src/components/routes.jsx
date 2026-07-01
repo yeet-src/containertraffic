@@ -3,7 +3,7 @@
 // containers serve the highlighted route plus its full percentiles.
 import { Box, Text } from "yeet:tui";
 import { b, bar, errColor, fmtCount, fmtLat, fmtRate, latColor, lpad, pad, t } from "@/lib/format.js";
-import { slowMs } from "@/probes/containertraffic.js";
+import { slowMs } from "@/probes/container-traffic.js";
 import { C } from "@/lib/theme.js";
 
 const BAR_W = 10;

@@ -1,4 +1,4 @@
-// containertraffic — "top for your containers' HTTP traffic".
+// container-traffic — "top for your containers' HTTP traffic".
 //
 // Watches HTTP at the socket layer with zero application instrumentation,
 // attributes every request to the container that made it (by cgroup id),
@@ -46,7 +46,7 @@ char LICENSE[] SEC("license") = "Dual BSD/GPL";
 // Slow-request floor in milliseconds, patched live from the UI. Default 0:
 // emit everything until the user raises the bar. Kept in .data (volatile,
 // referenced) so the bound section stays `<obj>.data`. Must match
-// `minLatency`'s initial value in probes/containertraffic.js.
+// `minLatency`'s initial value in probes/container-traffic.js.
 volatile __u64 min_latency_ms = 0;
 
 // How a request was observed — the dual-source proof.

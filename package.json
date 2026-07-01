@@ -1,8 +1,8 @@
 {
-  "name": "containertraffic",
+  "name": "container-traffic",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "containertraffic: top for your containers' HTTP traffic. RED metrics via eBPF, plaintext and TLS.",
+  "description": "container-traffic: top for your containers' HTTP traffic. RED metrics via eBPF, plaintext and TLS.",
   "dependencies": {}
 }

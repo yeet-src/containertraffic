@@ -38,7 +38,7 @@ export default ({ view, width, railFocused }) => (
   <Box direction="column" width={`${width}`} height="1fr" bg={C.rail} overflow="hidden">
     {/* brand chip */}
     <Box height="1" direction="row" bg={C.railAccent}>
-      <Text break="none">{b(C.textBold, " ▌ctraffic")}</Text>
+      <Text break="none">{b(C.textBold, " ▌c-traffic")}</Text>
     </Box>
     <Box height="1"><Text> </Text></Box>
     {() => {

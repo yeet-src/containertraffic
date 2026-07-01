@@ -1,4 +1,4 @@
-/* containertraffic — top for your containers' HTTP traffic.
+/* container-traffic — top for your containers' HTTP traffic.
  *
  * A live, zero-config view of every container's HTTP, attributed by cgroup
  * straight from the kernel — no sidecar, no app changes. It frames what it sees
@@ -19,7 +19,7 @@
  * host libssl only (see README).
  */
 import { Box, mount, signal } from "yeet:tui";
-import { containers, feed, routes, reset, setSlowMs, slowMs, stats } from "@/probes/containertraffic.js";
+import { containers, feed, routes, reset, setSlowMs, slowMs, stats } from "@/probes/container-traffic.js";
 import { closeLogs, logLines, logStatus, openLogs } from "@/probes/logs.js";
 import { firstListRow, layoutFor, RAIL_FIRST_TAB_ROW } from "@/lib/layout.js";
 import TabBar, { TABS } from "@/components/tabbar.jsx";

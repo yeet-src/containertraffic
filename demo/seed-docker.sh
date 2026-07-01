@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Real-Docker demo: a handful of named containers, each running demo/app.py with
 # a different PROFILE so they tell distinct RED stories. Because they're real
-# Docker containers, containertraffic resolves them by container id (the 64-hex in
+# Docker containers, container-traffic resolves them by container id (the 64-hex in
 # their cgroup) to their real names, AND the detail pane's live log tail works (it
 # streams docker_logs).
 #
@@ -10,7 +10,7 @@
 # Needs: docker, the python:3-slim image (pulled on first run). Root.
 set -u
 cd "$(dirname "$0")"
-IMAGE="containertraffic-demo"
+IMAGE="container-traffic-demo"
 NAMES=(web-frontend checkout-api auth-svc payments-gw)
 
 cleanup() {

@@ -1,5 +1,5 @@
 // Key-hint rail — uses the shared theme (not hardcoded kit colors) so it
-// matches containertraffic's slate identity. Each shortcut is a keycap on a
+// matches container-traffic's slate identity. Each shortcut is a keycap on a
 // slate tile then a dim label.
 import { Box, Text, face } from "yeet:tui";
 import { t } from "@/lib/format.js";

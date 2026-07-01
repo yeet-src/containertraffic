@@ -1,4 +1,4 @@
-// Status rail — containertraffic's signature health strip, the RED triad made
+// Status rail — container-traffic's signature health strip, the RED triad made
 // glanceable: BROKEN (errors), OVERLOADED (rate), plus the dual-source split.
 // One row, tinted as a rail via its own bg.
 import { Box, Text } from "yeet:tui";
